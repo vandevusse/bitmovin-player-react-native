@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -15,46 +15,56 @@ function prettyPrint(header: string, obj: any) {
 }
 
 export default function Casting() {
-  BitmovinCastManager.initialize({
-    applicationId: '910D2539'
-  });
-
-  if (Platform.OS === 'android') {
-    // Must be called in every activity on Android
-    BitmovinCastManager.updateContext();
-  }
-
+  const [initialized, setInitialized] = useState(false);
   const player = usePlayer();
+
+  useEffect(() => {
+    const initializeCastManager = async () => {
+      await BitmovinCastManager.initialize({
+        applicationId: '910D2539',
+      });
+
+      if (Platform.OS === 'android') {
+        await BitmovinCastManager.updateContext();
+      }
+
+      setInitialized(true);
+    };
+
+    initializeCastManager();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      const source = new Source({
-        url:
-          Platform.OS === 'ios'
-            ? 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'
-            : 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
-        type: Platform.OS === 'ios' ? SourceType.HLS : SourceType.DASH,
-        title: 'Art of Motion - Custom Receiver 910D2539',
-        poster:
-          'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/poster.jpg',
-        thumbnailTrack:
-          'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/thumbnails/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.vtt',
-        metadata: { platform: Platform.OS },
-      });
-
-      // Configure playing DASH source on Chromecast, even when casting from iOS.
-      source.remoteControl = {
-        castSourceConfig: {
-          url: 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
-          type: SourceType.DASH,
+      if (initialized) {
+        const source = new Source({
+          url:
+            Platform.OS === 'ios'
+              ? 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'
+              : 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
+          type: Platform.OS === 'ios' ? SourceType.HLS : SourceType.DASH,
           title: 'Art of Motion - Custom Receiver 910D2539',
-        },
-      };
-      player.loadSource(source);
-      return () => {
-        player.destroy();
-      };
-    }, [player])
+          poster:
+            'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/poster.jpg',
+          thumbnailTrack:
+            'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/thumbnails/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.vtt',
+          metadata: { platform: Platform.OS },
+        });
+
+        // Configure playing DASH source on Chromecast, even when casting from iOS.
+        source.remoteControl = {
+          castSourceConfig: {
+            url: 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
+            type: SourceType.DASH,
+            title: 'Art of Motion - Custom Receiver 910D2539',
+          },
+        };
+        player.loadSource(source);
+        return () => {
+          player.destroy();
+        };
+      }
+    }, [initialized, player])
   );
 
   const onReady = useCallback((event: Event) => {
