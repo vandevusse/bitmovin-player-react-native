@@ -15,7 +15,9 @@ function prettyPrint(header: string, obj: any) {
 }
 
 export default function Casting() {
-  BitmovinCastManager.initialize();
+  BitmovinCastManager.initialize({
+    applicationId: '910D2539'
+  });
 
   if (Platform.OS === 'android') {
     // Must be called in every activity on Android
@@ -32,7 +34,7 @@ export default function Casting() {
             ? 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'
             : 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
         type: Platform.OS === 'ios' ? SourceType.HLS : SourceType.DASH,
-        title: 'Art of Motion',
+        title: 'Art of Motion - Custom Receiver 910D2539',
         poster:
           'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/poster.jpg',
         thumbnailTrack:
@@ -45,7 +47,7 @@ export default function Casting() {
         castSourceConfig: {
           url: 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
           type: SourceType.DASH,
-          title: 'Art of Motion',
+          title: 'Art of Motion - Custom Receiver 910D2539',
         },
       };
       player.loadSource(source);
